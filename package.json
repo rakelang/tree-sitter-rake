@@ -1,0 +1,38 @@
+{
+  "name": "tree-sitter-rake",
+  "version": "0.2.0",
+  "description": "Tree-sitter grammar for Rake, a vector-first language for CPU SIMD",
+  "main": "bindings/node",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/KaiStarkk/tree-sitter-rake.git"
+  },
+  "keywords": [
+    "tree-sitter",
+    "rake",
+    "simd",
+    "vector",
+    "parser"
+  ],
+  "author": "Kieran Rosenberg",
+  "license": "MIT",
+  "dependencies": {
+    "nan": "^2.17.0"
+  },
+  "devDependencies": {
+    "tree-sitter-cli": "^0.20.8"
+  },
+  "scripts": {
+    "build": "tree-sitter generate",
+    "test": "tree-sitter test",
+    "parse": "tree-sitter parse"
+  },
+  "tree-sitter": [
+    {
+      "scope": "source.rake",
+      "file-types": ["rk"],
+      "injection-regex": "^rake$",
+      "highlights": "queries/highlights.scm"
+    }
+  ]
+}
