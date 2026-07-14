@@ -1,369 +1,334 @@
-// Tree-sitter grammar for Rake 0.2.0
-// A vector-first language for CPU SIMD with divergent control flow
+// Tree-sitter grammar for Rake's canonical source language.
+// The generated parser is syntax-only; semantic and target guarantees remain
+// compiler checks.
 
 module.exports = grammar({
   name: 'rake',
 
-  extras: $ => [
-    /\s/,
-    $.comment,
-  ],
-
+  extras: $ => [/[\s\uFEFF\u2060\u200B]/, $.comment],
   word: $ => $.identifier,
-
-  conflicts: $ => [
-    // cmp_operand and expression share common terms
-    [$.cmp_operand, $.expression],
-  ],
-
-  externals: $ => [],
 
   rules: {
     source_file: $ => repeat($._definition),
 
     _definition: $ => choice(
-      $.stack_def,
-      $.single_def,
-      $.type_def,
-      $.crunch_def,
-      $.rake_def,
-      $.run_def,
+      $.stack_definition,
+      $.crunch_definition,
+      $.rake_definition,
+      $.run_definition,
     ),
 
-    // Comments: ~~ rake marks in sand
-    comment: $ => /~~[^\n]*/,
+    comment: _ => choice(/~~[^\n]*/, /\(\*([^*]|\*[^)])*\*\)/),
 
-    // Stack type definition (SoA layout)
-    stack_def: $ => seq(
+    stack_definition: $ => seq(
       'stack',
       field('name', $.type_identifier),
       '{',
-      commaSep($.field_def),
-      '}'
+      repeat1($.field_group),
+      '}',
     ),
 
-    // Single type definition (uniform/scalar struct)
-    single_def: $ => seq(
-      'single',
-      field('name', $.type_identifier),
-      '{',
-      commaSep($.field_def),
-      '}'
-    ),
-
-    // Type alias
-    type_def: $ => seq(
-      'type',
-      field('name', $.type_identifier),
-      '=',
-      $.type
-    ),
-
-    field_def: $ => seq(
-      field('name', $.identifier),
+    field_group: $ => seq(
+      field('type', $.storage_type),
       ':',
-      field('type', $.type)
+      commaSep1(field('name', $.identifier)),
+      ';',
     ),
 
-    // Crunch: pure vector computation
-    crunch_def: $ => seq(
+    crunch_definition: $ => seq(
       'crunch',
       field('name', $.identifier),
-      repeat($.parameter),
+      $.parameter_list,
       '->',
-      field('result', $.result_spec),
+      field('result', $.type),
       ':',
-      repeat($._statement)
+      repeat($._statement),
+      $.return_statement,
     ),
 
-    // Rake: divergent computation with tines
-    rake_def: $ => seq(
+    rake_definition: $ => seq(
       'rake',
       field('name', $.identifier),
-      repeat($.parameter),
+      $.parameter_list,
       '->',
-      field('result', $.result_spec),
+      field('result', $.type),
       ':',
-      repeat($.let_statement),  // setup
-      repeat1($.tine_decl),
-      repeat1($.through_block),
-      $.sweep_block
+      repeat($._statement),
+      repeat1($.tine_declaration),
+      repeat1($.through_statement),
+      $.return_sweep_statement,
     ),
 
-    // Run: sequential orchestration
-    run_def: $ => seq(
+    run_definition: $ => seq(
       'run',
       field('name', $.identifier),
-      repeat($.parameter),
+      $.parameter_list,
       '->',
-      field('result', $.result_spec),
+      field('result', $.storage_type),
       ':',
-      repeat($._statement)
+      $.traversal_statement,
     ),
 
-    // Parameters
+    parameter_list: $ => seq('(', commaSep($.parameter), ')'),
+
     parameter: $ => choice(
-      $.rack_param,
-      $.scalar_param
+      $.value_parameter,
+      $.scalar_parameter,
+      $.pack_parameter,
     ),
 
-    rack_param: $ => choice(
-      $.identifier,
-      seq('(', $.identifier, ':', $.type, ')')
+    value_parameter: $ => seq(
+      field('name', $.identifier),
+      ':',
+      field('type', choice($.rack_type, $.mask_type)),
     ),
 
-    scalar_param: $ => choice(
-      $.scalar_expression,
-      seq('(', $.scalar_expression, ':', $.type, ')')
+    scalar_parameter: $ => seq(
+      '<',
+      field('name', alias($.identifier, $.scalar_name)),
+      ':',
+      field('type', $.storage_type),
+      '>',
     ),
 
-    result_spec: $ => choice(
-      $.identifier,
-      seq('(', $.identifier, ':', $.type, ')'),
-      seq('(', commaSep1($.identifier), ')')
+    pack_parameter: $ => seq(
+      field('name', $.identifier),
+      ':',
+      field('type', $.pack_type),
     ),
 
-    // Types
     type: $ => choice(
-      $.primitive_type,
-      $.compound_type,
+      $.storage_type,
       $.rack_type,
-      $.stack_type,
-      $.single_type,
-      $.pack_type,
       $.mask_type,
-      $.function_type,
-      $.tuple_type,
-      $.unit_type
+      $.pack_type,
+      $.stack_type,
     ),
 
-    primitive_type: $ => choice(
-      'float', 'double',
-      'int', 'int8', 'int16', 'int64',
-      'uint', 'uint8', 'uint16', 'uint64',
-      'bool'
+    storage_type: _ => choice(
+      'f32', 'f64',
+      'i8', 'i16', 'i32', 'i64',
+      'u8', 'u16', 'u32', 'u64',
+      'bool',
     ),
 
-    compound_type: $ => choice('vec2', 'vec3', 'vec4', 'mat3', 'mat4'),
-
-    rack_type: $ => seq(choice($.primitive_type, $.compound_type), 'rack'),
-    stack_type: $ => seq($.type_identifier, 'stack'),
-    single_type: $ => seq($.type_identifier, 'single'),
-    pack_type: $ => seq($.type_identifier, 'pack'),
-    mask_type: $ => 'mask',
-    function_type: $ => seq('(', commaSep($.type), ')', '->', $.type),
-    tuple_type: $ => seq('(', commaSep1($.type), ')'),
-    unit_type: $ => seq('(', ')'),
-
-    // Tine declaration: | #name := (predicate)
-    tine_decl: $ => seq(
-      '|',
-      $.tine_ref,
-      ':=',
-      '(',
-      $.predicate,
-      ')'
+    rack_type: _ => choice(
+      'f32s', 'f64s',
+      'i8s', 'i16s', 'i32s', 'i64s',
+      'u8s', 'u16s', 'u32s', 'u64s',
+      'bools',
     ),
 
-    // Tine reference: #name
-    tine_ref: $ => seq('#', $.identifier),
+    mask_type: _ => 'mask',
+    pack_type: $ => seq('pack', field('schema', $.type_identifier)),
+    stack_type: $ => seq('stack', field('schema', $.type_identifier)),
 
-    // Predicates
-    predicate: $ => choice(
-      $.predicate_or
-    ),
-
-    predicate_or: $ => choice(
-      seq($.predicate_or, choice('||', 'or'), $.predicate_and),
-      $.predicate_and
-    ),
-
-    predicate_and: $ => choice(
-      seq($.predicate_and, choice('&&', 'and'), $.predicate_not),
-      $.predicate_not
-    ),
-
-    predicate_not: $ => choice(
-      seq(choice('!', 'not'), $.predicate_not),
-      $.predicate_cmp
-    ),
-
-    predicate_cmp: $ => choice(
-      seq($.cmp_operand, $.comparison_op, $.cmp_operand),
-      $.tine_ref,
-      seq('(', $.predicate, ')')
-    ),
-
-    // Expression that can be used in comparisons (no comparison ops to avoid ambiguity)
-    cmp_operand: $ => choice(
-      $.cmp_binary,
-      $.unary_expression,
-      $.call_expression,
-      $.field_expression,
-      $.scalar_expression,
-      $.record_expression,
-      $.reduce_expression,
-      $.scan_expression,
-      $.shuffle_expression,
-      $.primary_expression
-    ),
-
-    cmp_binary: $ => choice(
-      prec.left(5, seq($.cmp_operand, choice('+', '-'), $.cmp_operand)),
-      prec.left(6, seq($.cmp_operand, choice('*', '/', '%'), $.cmp_operand)),
-      prec.left(7, seq($.cmp_operand, choice('<<', '>>', '<<<', '>>>'), $.cmp_operand)),
-      prec.left(8, seq($.cmp_operand, '><', $.cmp_operand)),
-    ),
-
-    comparison_op: $ => choice('<', '<=', '>', '>=', '=', '!=', 'is', /is\s+not/),
-
-    // Through block: masked computation
-    through_block: $ => seq(
-      'through',
-      $.tine_ref_expr,
-      optional($.else_clause),
-      ':',
-      repeat($.let_statement),
-      $.expression,
-      '->',
-      field('binding', $.identifier)
-    ),
-
-    tine_ref_expr: $ => choice(
-      $.tine_ref,
-      seq('(', $.predicate, ')')
-    ),
-
-    else_clause: $ => seq('else', $.simple_expression),
-
-    // Sweep block: collect results
-    sweep_block: $ => seq(
-      'sweep',
-      ':',
-      repeat1($.sweep_arm),
-      '->',
-      field('binding', $.identifier)
-    ),
-
-    sweep_arm: $ => seq(
-      '|',
-      choice($.tine_ref, '_'),
-      '->',
-      $.expression
-    ),
-
-    // Statements
     _statement: $ => choice(
-      $.let_statement,
-      $.assign_statement,
-      $.over_statement,
-      $.expression_statement
+      $._binding_statement,
+      $.mutable_binding,
+      $.assignment_statement,
+      $.expression_statement,
     ),
 
-    // Over loop: iterate over pack in SIMD-width chunks
-    // Body is a single expression (use let-in for multiple bindings)
-    over_statement: $ => prec.right(seq(
-      'over',
-      field('pack', $.expression),
-      ',',
-      field('count', $.scalar_expression),
-      '|>',
-      field('binding', $.identifier),
-      ':',
-      field('body', $.expression)
-    )),
+    _binding_statement: $ => choice($.let_statement, $.fused_binding),
 
     let_statement: $ => seq(
       'let',
       field('name', $.identifier),
-      optional(seq(':', $.type)),
+      optional(seq(':', field('type', $.type))),
       '=',
-      $.expression
+      field('value', $.expression),
     ),
 
-    assign_statement: $ => seq(
-      $.identifier,
+    fused_binding: $ => seq(
+      '|',
+      field('name', $.identifier),
+      optional(seq(':', field('type', $.type))),
+      '<|',
+      field('value', $.expression),
+    ),
+
+    mutable_binding: $ => seq(
+      field('name', $.identifier),
+      optional(seq(':', field('type', $.type))),
+      ':=',
+      field('value', $.expression),
+    ),
+
+    assignment_statement: $ => seq(
+      field('name', $.identifier),
       '<-',
-      $.expression
+      field('value', $.expression),
     ),
 
     expression_statement: $ => $.expression,
 
-    // Expressions
+    return_statement: $ => seq('return', field('value', $.expression)),
+
+    tine_declaration: $ => seq(
+      'tine',
+      field('name', $.tine),
+      'when',
+      field('condition', $.predicate),
+    ),
+
+    predicate: $ => choice(
+      prec.left(1, seq($.predicate, 'or', $.predicate)),
+      prec.left(2, seq($.predicate, 'and', $.predicate)),
+      prec.right(3, seq('not', $.predicate)),
+      prec.left(4, seq(
+        $.predicate_arithmetic,
+        choice('<', '<=', '>', '>=', '=', '!='),
+        $.predicate_arithmetic,
+      )),
+      $.tine,
+      seq('(', $.predicate, ')'),
+    ),
+
+    predicate_arithmetic: $ => choice(
+      prec.left(5, seq($.predicate_arithmetic, choice('+', '-'), $.predicate_arithmetic)),
+      prec.left(6, seq($.predicate_arithmetic, choice('*', '/', '%'), $.predicate_arithmetic)),
+      prec.right(7, seq('-', $.predicate_arithmetic)),
+      $.predicate_atom,
+    ),
+
+    predicate_atom: $ => choice(
+      $.identifier,
+      $.integer_literal,
+      $.float_literal,
+      $.boolean_literal,
+      $.scalar_expression,
+      prec.left(9, seq($.predicate_atom, '.', $.identifier)),
+      seq('(', $.predicate_arithmetic, ')'),
+    ),
+
+    through_statement: $ => seq(
+      'through',
+      field('mask', $.tine),
+      'else',
+      field('passthrough', $.scalar_expression),
+      'into',
+      field('name', $.identifier),
+      ':',
+      repeat($._binding_statement),
+      field('value', $.expression),
+    ),
+
+    return_sweep_statement: $ => seq(
+      'return',
+      'sweep',
+      ':',
+      repeat1($.sweep_arm),
+    ),
+
+    sweep_arm: $ => seq(
+      '|',
+      field('selector', choice($.tine, '_')),
+      '=>',
+      field('value', $.expression),
+    ),
+
+    traversal_statement: $ => seq(
+      'for',
+      field('binding', $.identifier),
+      'in',
+      field('pack', $.identifier),
+      'using',
+      field('domain', $.rack_type),
+      'up',
+      'to',
+      field('count', $.scalar_expression),
+      ':',
+      repeat($._statement),
+      $.yield_statement,
+    ),
+
+    yield_statement: $ => seq('yield', field('value', $.expression)),
+
     expression: $ => choice(
       $.binary_expression,
       $.unary_expression,
+      $.shuffle_expression,
+      $.static_move_expression,
       $.call_expression,
       $.field_expression,
+      $.index_expression,
       $.scalar_expression,
-      $.record_expression,
-      $.reduce_expression,
-      $.scan_expression,
-      $.shuffle_expression,
-      $.lambda_expression,
-      $.let_expression,
-      $.primary_expression
+      $.tine,
+      $.primary_expression,
     ),
 
     binary_expression: $ => choice(
-      prec.left(1, seq($.expression, '|>', $.expression)),
-      prec.left(2, seq($.expression, choice('||', 'or'), $.expression)),
-      prec.left(3, seq($.expression, choice('&&', 'and'), $.expression)),
-      prec.left(4, seq($.expression, choice('<', '<=', '>', '>=', '=', '!='), $.expression)),
-      prec.left(5, seq($.expression, choice('+', '-'), $.expression)),
-      prec.left(6, seq($.expression, choice('*', '/', '%'), $.expression)),
-      prec.left(7, seq($.expression, choice('<<', '>>', '<<<', '>>>'), $.expression)),
-      prec.left(8, seq($.expression, '><', $.expression)),
+      prec.left(1, seq($.expression, 'or', $.expression)),
+      prec.left(2, seq($.expression, 'and', $.expression)),
+      prec.left(3, seq($.expression, choice('<', '<=', '>', '>=', '=', '!='), $.expression)),
+      prec.left(4, seq($.expression, choice('+', '-'), $.expression)),
+      prec.left(5, seq($.expression, choice('*', '/', '%'), $.expression)),
     ),
 
-    unary_expression: $ => prec.right(9, seq(choice('-', '!', 'not'), $.expression)),
+    unary_expression: $ => prec.right(6, seq(choice('-', 'not'), $.expression)),
 
-    call_expression: $ => prec(10, seq(
+    call_expression: $ => prec(8, seq(
       field('function', $.identifier),
       '(',
       commaSep($.expression),
-      ')'
+      ')',
     )),
 
-    field_expression: $ => prec.left(11, seq($.expression, '.', $.identifier)),
+    shuffle_expression: $ => prec(10, seq(
+      'shuffle',
+      '(',
+      field('value', $.expression),
+      ',',
+      '[',
+      commaSep1(field('index', $.integer_literal)),
+      ']',
+      ')',
+    )),
 
-    // Scalar/broadcast expression: <name>, <name.field>, <1.0>
-    // All scalar values use angle bracket syntax
+    static_move_expression: $ => prec(10, seq(
+      field('function', choice(
+        'shift_left', 'shift_right', 'rotate_left', 'rotate_right',
+      )),
+      '(',
+      field('value', $.expression),
+      ',',
+      field('amount', $.integer_literal),
+      ')',
+    )),
+
+    field_expression: $ => prec.left(9, seq(
+      field('value', $.expression),
+      '.',
+      field('field', $.identifier),
+    )),
+
+    index_expression: $ => prec.left(9, seq(
+      field('value', $.expression),
+      '[',
+      field('index', $.expression),
+      ']',
+    )),
+
     scalar_expression: $ => seq(
       '<',
-      $.scalar_inner,
-      '>'
+      field('value', $.scalar_value),
+      '>',
     ),
 
-    scalar_inner: $ => prec.left(choice(
+    scalar_value: $ => choice(
       $.identifier,
-      seq($.scalar_inner, '.', $.identifier),
       $.integer_literal,
       $.float_literal,
-      seq('-', $.integer_literal),
-      seq('-', $.float_literal)
-    )),
-
-    record_expression: $ => seq(
-      $.type_identifier,
-      '{',
-      commaSep($.field_init),
-      '}'
+      $.boolean_literal,
+      seq('-', choice($.integer_literal, $.float_literal)),
+      prec.left(9, seq($.scalar_value, '.', $.identifier)),
     ),
 
-    field_init: $ => seq($.identifier, ':=', $.expression),
-
-    reduce_expression: $ => prec.left(12, seq($.expression, $.reduce_op)),
-    reduce_op: $ => choice('\\+/', '\\*/', '\\min/', '\\max/', '\\|/', '\\&/'),
-
-    scan_expression: $ => prec.left(12, seq($.expression, $.scan_op)),
-    scan_op: $ => choice('\\+\\', '\\*\\', '\\min\\', '\\max\\'),
-
-    shuffle_expression: $ => prec.left(11, seq($.expression, '~>', '[', commaSep($.integer_literal), ']')),
-
-    lambda_expression: $ => prec.right(0, seq('fun', repeat1($.parameter), '->', $.expression)),
-
-    let_expression: $ => prec.right(1, seq('let', $.identifier, '=', $.expression, 'in', $.expression)),
+    tine: $ => seq(
+      '#',
+      alias(token.immediate(/[a-zA-Z_][a-zA-Z0-9_]*/), $.tine_name),
+    ),
 
     primary_expression: $ => choice(
       $.identifier,
@@ -372,31 +337,19 @@ module.exports = grammar({
       $.boolean_literal,
       $.lane_index,
       $.lanes,
-      $.unit,
       seq('(', $.expression, ')'),
-      seq('(', commaSep1($.expression), ')'),  // tuple
     ),
 
-    simple_expression: $ => choice(
-      $.scalar_expression,
-      $.integer_literal,
-      $.float_literal,
-      $.boolean_literal
-    ),
-
-    // Terminals
-    identifier: $ => /[a-z_][a-zA-Z0-9_]*/,
-    type_identifier: $ => /[A-Z][a-zA-Z0-9_]*/,
-    integer_literal: $ => /-?[0-9]+/,
-    float_literal: $ => /-?[0-9]+\.[0-9]*([eE][+-]?[0-9]+)?/,
-    boolean_literal: $ => choice('true', 'false'),
-    lane_index: $ => '@',
-    lanes: $ => 'lanes',
-    unit: $ => seq('(', ')'),
-  }
+    identifier: _ => /[a-zA-Z_][a-zA-Z0-9_]*/,
+    type_identifier: _ => /[A-Z][a-zA-Z0-9_]*/,
+    integer_literal: _ => /0x[0-9a-fA-F]+|[0-9]+/,
+    float_literal: _ => /([0-9]+\.[0-9]*([eE][+-]?[0-9]+)?|[0-9]+[eE][+-]?[0-9]+)/,
+    boolean_literal: _ => choice('true', 'false'),
+    lane_index: _ => '@',
+    lanes: _ => 'lanes',
+  },
 });
 
-// Helper functions
 function commaSep(rule) {
   return optional(commaSep1(rule));
 }

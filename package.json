@@ -1,11 +1,11 @@
 {
   "name": "tree-sitter-rake",
-  "version": "0.2.0",
+  "version": "0.3.0-alpha.1",
   "description": "Tree-sitter grammar for Rake, a vector-first language for CPU SIMD",
   "main": "bindings/node",
   "repository": {
     "type": "git",
-    "url": "https://github.com/KaiStarkk/tree-sitter-rake.git"
+    "url": "https://github.com/rakelang/tree-sitter-rake.git"
   },
   "keywords": [
     "tree-sitter",
@@ -20,11 +20,12 @@
     "nan": "^2.17.0"
   },
   "devDependencies": {
-    "tree-sitter-cli": "^0.20.8"
+    "tree-sitter-cli": "^0.26.8"
   },
   "scripts": {
     "build": "tree-sitter generate",
-    "test": "tree-sitter test",
+    "test": "tree-sitter generate && tree-sitter test",
+    "test:differential": "bash ../rake/test/parser_differential.sh",
     "parse": "tree-sitter parse"
   },
   "tree-sitter": [

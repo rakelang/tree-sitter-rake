@@ -1,0 +1,34 @@
+stack Samples {
+  f32: value;
+  u8: quality;
+}
+
+crunch advance(positions: f32s, velocities: f32s) -> f32s:
+  | scaled: f32s <| velocities * <0.5>
+  | result: f32s <| positions + scaled
+  return result
+
+rake safe_root(values: f32s) -> f32s:
+  tine #valid when values >= <0.0>
+
+  through #valid else <0.0> into rooted:
+    sqrt(values)
+
+  return sweep:
+    | #valid => rooted
+    | _      => <0.0>
+
+run scale_values(
+  input: pack Samples,
+  <count: i64>,
+  <scale: f32>
+) -> f32:
+  for chunk in input using f32s up to <count>:
+    let quality: u32s = widen(chunk.quality)
+    yield chunk.value * <scale>
+
+crunch stateful(values: f32s) -> f32s:
+  accumulator: f32s := values
+  accumulator <- shuffle(accumulator, [1, 0, 3, 2])
+  inspect(accumulator)
+  return accumulator
