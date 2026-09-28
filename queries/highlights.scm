@@ -1,5 +1,7 @@
 ; Rake canonical syntax highlighting
 
+(identifier) @variable
+
 (comment) @comment
 
 [
@@ -106,5 +108,3 @@
   ":"
   "."
 ] @punctuation.delimiter
-
-(identifier) @variable
