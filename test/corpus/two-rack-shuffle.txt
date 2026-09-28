@@ -1,0 +1,39 @@
+==================
+Two-rack shuffle
+==================
+
+crunch combine(left: u8s, right: u8s) -> u32:
+  return bitmask(shuffle(left, right, [0, 1, 16, 17]))
+
+---
+
+(source_file
+  (crunch_definition
+    (identifier)
+    (parameter_list
+      (parameter
+        (value_parameter
+          (identifier)
+          (rack_type)))
+      (parameter
+        (value_parameter
+          (identifier)
+          (rack_type))))
+    (type
+      (storage_type))
+    (return_statement
+      (expression
+        (call_expression
+          (identifier)
+          (expression
+            (shuffle_expression
+              (expression
+                (primary_expression
+                  (identifier)))
+              (expression
+                (primary_expression
+                  (identifier)))
+              (integer_literal)
+              (integer_literal)
+              (integer_literal)
+              (integer_literal))))))))

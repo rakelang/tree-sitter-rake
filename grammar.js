@@ -280,6 +280,7 @@ module.exports = grammar({
       '(',
       field('value', $.expression),
       ',',
+      optional(seq(field('second_value', $.expression), ',')),
       '[',
       commaSep1(field('index', $.integer_literal)),
       ']',
