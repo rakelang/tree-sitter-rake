@@ -14,11 +14,13 @@ crunch combine(left: u8s, right: u8s) -> u32:
       (parameter
         (value_parameter
           (identifier)
-          (rack_type)))
+          (type
+            (rack_type))))
       (parameter
         (value_parameter
           (identifier)
-          (rack_type))))
+          (type
+            (rack_type)))))
     (type
       (storage_type))
     (return_statement

@@ -1,0 +1,263 @@
+==================
+Slow tier, records and general runs
+==================
+
+record Point {
+  i32: x, y;
+}
+
+extern slow log_value(value: i32) from "helper.h"
+state turns: i32 := 0
+embed weights from "student.bin"
+const limit: i32 = 8
+
+run scale(x: []f32, out: mut []f32, <n: i32>):
+  for <i: i32> from <0> up to <n> by <4>:
+    out[<i>] <- if x[<i>] > 0.0 then x[<i>] else -x[<i>]
+
+slow main() -> i32:
+  p: Point := Point { x: 1, y: 2 }
+  values: [8]f32 := [0.0; 8]
+  while p.x < limit:
+    if p.x = 3:
+      break
+    else if p.y > 4:
+      continue
+    else:
+      p.x <- wrap(i32, p.x + 1)
+  turns <- turns + i32(values[unchecked 0])
+  return p.x
+
+---
+
+(source_file
+  (record_definition
+    (type_identifier)
+    (record_field_group
+      (type
+        (storage_type))
+      (identifier)
+      (identifier)))
+  (extern_definition
+    (identifier)
+    (parameter_list
+      (parameter
+        (value_parameter
+          (identifier)
+          (type
+            (storage_type)))))
+    (string_literal))
+  (state_definition
+    (identifier)
+    (type
+      (storage_type))
+    (expression
+      (primary_expression
+        (integer_literal))))
+  (embed_definition
+    (identifier)
+    (string_literal))
+  (const_definition
+    (identifier)
+    (type
+      (storage_type))
+    (expression
+      (primary_expression
+        (integer_literal))))
+  (run_definition
+    (identifier)
+    (parameter_list
+      (parameter
+        (value_parameter
+          (identifier)
+          (type
+            (view_type
+              (type
+                (storage_type))))))
+      (parameter
+        (value_parameter
+          (identifier)
+          (type
+            (mutable_type
+              (type
+                (view_type
+                  (type
+                    (storage_type))))))))
+      (parameter
+        (scalar_parameter
+          (scalar_name)
+          (type
+            (storage_type)))))
+    (for_statement
+      (scalar_variable
+        (scalar_name)
+        (type
+          (storage_type)))
+      (expression
+        (scalar_expression
+          (scalar_value
+            (integer_literal))))
+      (expression
+        (scalar_expression
+          (scalar_value
+            (identifier))))
+      (expression
+        (scalar_expression
+          (scalar_value
+            (integer_literal))))
+      (assignment_statement
+        (index_expression
+          (primary_expression
+            (identifier))
+          (expression
+            (scalar_expression
+              (scalar_value
+                (identifier)))))
+        (expression
+          (conditional_expression
+            (expression
+              (binary_expression
+                (expression
+                  (index_expression
+                    (primary_expression
+                      (identifier))
+                    (expression
+                      (scalar_expression
+                        (scalar_value
+                          (identifier))))))
+                (expression
+                  (primary_expression
+                    (float_literal)))))
+            (expression
+              (index_expression
+                (primary_expression
+                  (identifier))
+                (expression
+                  (scalar_expression
+                    (scalar_value
+                      (identifier))))))
+            (expression
+              (unary_expression
+                (expression
+                  (index_expression
+                    (primary_expression
+                      (identifier))
+                    (expression
+                      (scalar_expression
+                        (scalar_value
+                          (identifier)))))))))))))
+  (slow_definition
+    (identifier)
+    (parameter_list)
+    (type
+      (storage_type))
+    (mutable_binding
+      (identifier)
+      (type
+        (type_identifier))
+      (expression
+        (record_expression
+          (type_identifier)
+          (field_initializer
+            (identifier)
+            (expression
+              (primary_expression
+                (integer_literal))))
+          (field_initializer
+            (identifier)
+            (expression
+              (primary_expression
+                (integer_literal)))))))
+    (mutable_binding
+      (identifier)
+      (type
+        (array_type
+          (integer_literal)
+          (type
+            (storage_type))))
+      (expression
+        (array_expression
+          (expression
+            (primary_expression
+              (float_literal)))
+          (integer_literal))))
+    (while_statement
+      (expression
+        (binary_expression
+          (expression
+            (field_expression
+              (primary_expression
+                (identifier))
+              (identifier)))
+          (expression
+            (primary_expression
+              (identifier)))))
+      (if_statement
+        (expression
+          (binary_expression
+            (expression
+              (field_expression
+                (primary_expression
+                  (identifier))
+                (identifier)))
+            (expression
+              (primary_expression
+                (integer_literal)))))
+        (break_statement)
+        (else_clause
+          (if_statement
+            (expression
+              (binary_expression
+                (expression
+                  (field_expression
+                    (primary_expression
+                      (identifier))
+                    (identifier)))
+                (expression
+                  (primary_expression
+                    (integer_literal)))))
+            (continue_statement)
+            (else_clause
+              (assignment_statement
+                (field_expression
+                  (primary_expression
+                    (identifier))
+                  (identifier))
+                (expression
+                  (conversion_expression
+                    (type
+                      (storage_type))
+                    (expression
+                      (binary_expression
+                        (expression
+                          (field_expression
+                            (primary_expression
+                              (identifier))
+                            (identifier)))
+                        (expression
+                          (primary_expression
+                            (integer_literal)))))))))))))
+    (assignment_statement
+      (primary_expression
+        (identifier))
+      (expression
+        (binary_expression
+          (expression
+            (primary_expression
+              (identifier)))
+          (expression
+            (conversion_expression
+              (storage_type)
+              (expression
+                (index_expression
+                  (primary_expression
+                    (identifier))
+                  (expression
+                    (primary_expression
+                      (integer_literal))))))))))
+    (return_statement
+      (expression
+        (field_expression
+          (primary_expression
+            (identifier))
+          (identifier))))))

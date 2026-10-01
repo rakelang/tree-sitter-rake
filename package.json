@@ -1,6 +1,6 @@
 {
   "name": "tree-sitter-rake",
-  "version": "0.3.0-alpha.1",
+  "version": "0.4.0-beta",
   "description": "Tree-sitter grammar for Rake, a vector-first language for CPU SIMD",
   "main": "bindings/node",
   "repository": {
