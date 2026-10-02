@@ -95,7 +95,7 @@ export default grammar({
       repeat(seq($.let_statement, $._newline)),
       repeat1($.tine_declaration),
       repeat1($.through_statement),
-      $.return_sweep_statement,
+      $.sweep_statement,
       $._dedent,
     ),
 
@@ -411,8 +411,7 @@ export default grammar({
       $.boolean_literal,
     ),
 
-    return_sweep_statement: $ => seq(
-      'return',
+    sweep_statement: $ => seq(
       'sweep',
       ':',
       $._newline,

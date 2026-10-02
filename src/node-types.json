@@ -1377,7 +1377,7 @@
           "named": true
         },
         {
-          "type": "return_sweep_statement",
+          "type": "sweep_statement",
           "named": true
         },
         {
@@ -1603,21 +1603,6 @@
           }
         ]
       }
-    }
-  },
-  {
-    "type": "return_sweep_statement",
-    "named": true,
-    "fields": {},
-    "children": {
-      "multiple": true,
-      "required": true,
-      "types": [
-        {
-          "type": "sweep_arm",
-          "named": true
-        }
-      ]
     }
   },
   {
@@ -2241,6 +2226,21 @@
           }
         ]
       }
+    }
+  },
+  {
+    "type": "sweep_statement",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "sweep_arm",
+          "named": true
+        }
+      ]
     }
   },
   {

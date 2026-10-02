@@ -422,7 +422,7 @@
         },
         {
           "type": "SYMBOL",
-          "name": "return_sweep_statement"
+          "name": "sweep_statement"
         },
         {
           "type": "SYMBOL",
@@ -2350,13 +2350,9 @@
         }
       ]
     },
-    "return_sweep_statement": {
+    "sweep_statement": {
       "type": "SEQ",
       "members": [
-        {
-          "type": "STRING",
-          "value": "return"
-        },
         {
           "type": "STRING",
           "value": "sweep"
