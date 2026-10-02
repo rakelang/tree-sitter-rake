@@ -17,12 +17,12 @@ const PREC = {
   static_call: 10,
 };
 
-module.exports = grammar({
+export default grammar({
   name: 'rake',
 
-  externals: $ => [$._newline, $._indent, $._dedent, $._error_sentinel],
+  externals: $ => [$._newline, $._indent, $._dedent, $._error_sentinel, $.block_comment],
 
-  extras: $ => [/[\s﻿⁠​]/, $.comment],
+  extras: $ => [/[\s﻿⁠​]/, $.line_comment, $.block_comment],
   word: $ => $.identifier,
 
   rules: {
@@ -41,7 +41,7 @@ module.exports = grammar({
       seq($.const_definition, $._newline),
     ),
 
-    comment: _ => choice(/~~[^\n]*/, /\(\*([^*]|\*[^)])*\*\)/),
+    line_comment: _ => /~~[^\n]*/,
 
     stack_definition: $ => seq(
       'stack',
@@ -209,6 +209,7 @@ module.exports = grammar({
     _block: $ => seq(':', $._newline, $._indent, repeat1($._statement), $._dedent),
 
     _statement: $ => choice(
+      seq($.block_comment, optional($._newline)),
       seq($._simple_statement, $._newline),
       $._compound_statement,
     ),

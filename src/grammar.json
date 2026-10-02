@@ -109,18 +109,9 @@
         }
       ]
     },
-    "comment": {
-      "type": "CHOICE",
-      "members": [
-        {
-          "type": "PATTERN",
-          "value": "~~[^\\n]*"
-        },
-        {
-          "type": "PATTERN",
-          "value": "\\(\\*([^*]|\\*[^)])*\\*\\)"
-        }
-      ]
+    "line_comment": {
+      "type": "PATTERN",
+      "value": "~~[^\\n]*"
     },
     "stack_definition": {
       "type": "SEQ",
@@ -1143,6 +1134,27 @@
     "_statement": {
       "type": "CHOICE",
       "members": [
+        {
+          "type": "SEQ",
+          "members": [
+            {
+              "type": "SYMBOL",
+              "name": "block_comment"
+            },
+            {
+              "type": "CHOICE",
+              "members": [
+                {
+                  "type": "SYMBOL",
+                  "name": "_newline"
+                },
+                {
+                  "type": "BLANK"
+                }
+              ]
+            }
+          ]
+        },
         {
           "type": "SEQ",
           "members": [
@@ -3501,7 +3513,11 @@
     },
     {
       "type": "SYMBOL",
-      "name": "comment"
+      "name": "line_comment"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "block_comment"
     }
   ],
   "conflicts": [],
@@ -3522,6 +3538,10 @@
     {
       "type": "SYMBOL",
       "name": "_error_sentinel"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "block_comment"
     }
   ],
   "inline": [],

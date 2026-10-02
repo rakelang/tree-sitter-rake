@@ -1,15 +1,26 @@
 stack Samples {
+~~ <- keyword
+~~    ^ type
   f32: value;
+~~^ type.builtin
   u8: quality;
 }
 
 crunch advance(positions: f32s, velocities: f32s) -> f32s:
+~~ <- keyword
+~~     ^ function
+~~             ^ variable.parameter
   | scaled: f32s <| velocities * <0.5>
+~~^ operator.flow
+~~                ^^ operator.flow
   | result: f32s <| positions + scaled
   return result
+~~^ keyword
 
 rake safe_root(values: f32s) -> f32s:
   tine #valid when values >= <0.0>
+~~^ keyword
+~~     ^ tag
 
   through #valid else <0.0> into rooted:
     sqrt(values)

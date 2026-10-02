@@ -1,0 +1,36 @@
+==================
+Nested block comments
+==================
+
+crunch absolute(values: f32s) -> f32s:
+  let result = abs(values)
+  (* A body comment (* can nest here too. *) *)
+  return result (* and can follow an expression *)
+
+---
+
+(source_file
+  (crunch_definition
+    (identifier)
+    (parameter_list
+      (parameter
+        (value_parameter
+          (identifier)
+          (type
+            (rack_type)))))
+    (type
+      (rack_type))
+    (let_statement
+      (identifier)
+      (expression
+        (call_expression
+          (identifier)
+          (expression
+            (primary_expression
+              (identifier))))))
+    (block_comment)
+    (return_statement
+      (expression
+        (primary_expression
+          (identifier))))
+    (block_comment)))

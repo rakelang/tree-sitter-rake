@@ -1,11 +1,14 @@
 {
+  "$schema": "https://tree-sitter.github.io/tree-sitter/assets/schemas/config.schema.json",
   "grammars": [
     {
       "name": "rake",
       "camelcase": "Rake",
       "scope": "source.rake",
       "path": ".",
-      "file-types": ["rk"],
+      "file-types": [
+        "rk"
+      ],
       "highlights": "queries/highlights.scm",
       "injection-regex": "^rake$"
     }
@@ -13,7 +16,7 @@
   "metadata": {
     "version": "0.4.0-beta",
     "license": "MIT",
-    "description": "Tree-sitter grammar for Rake, a vector-first language for CPU SIMD",
+    "description": "Tree-sitter grammar for Rake, a vector-first SIMD language",
     "authors": [
       {
         "name": "Kieran Rosenberg"
@@ -25,7 +28,12 @@
   },
   "bindings": {
     "c": true,
+    "go": true,
+    "java": false,
     "node": true,
-    "rust": true
+    "python": true,
+    "rust": true,
+    "swift": true,
+    "zig": false
   }
 }

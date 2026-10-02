@@ -1,8 +1,17 @@
 {
   "name": "tree-sitter-rake",
   "version": "0.4.0-beta",
-  "description": "Tree-sitter grammar for Rake, a vector-first language for CPU SIMD",
+  "description": "Tree-sitter grammar for Rake, a vector-first SIMD language",
   "main": "bindings/node",
+  "types": "bindings/node",
+  "type": "module",
+  "files": [
+    "binding.gyp",
+    "bindings/node",
+    "grammar.js",
+    "queries",
+    "src"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/rakelang/tree-sitter-rake.git"
@@ -17,23 +26,31 @@
   "author": "Kieran Rosenberg",
   "license": "MIT",
   "dependencies": {
-    "nan": "^2.17.0"
+    "node-addon-api": "^8.3.1",
+    "node-gyp-build": "^4.8.4"
   },
   "devDependencies": {
+    "tree-sitter": "^0.25.1",
     "tree-sitter-cli": "^0.26.8"
   },
   "scripts": {
     "build": "tree-sitter generate",
-    "test": "tree-sitter generate && tree-sitter test",
+    "test": "tree-sitter generate && tree-sitter test && node --test bindings/node/binding_test.js",
     "test:differential": "bash ../rake/test/parser_differential.sh",
     "parse": "tree-sitter parse"
   },
   "tree-sitter": [
     {
       "scope": "source.rake",
-      "file-types": ["rk"],
+      "file-types": [
+        "rk"
+      ],
       "injection-regex": "^rake$",
       "highlights": "queries/highlights.scm"
     }
-  ]
+  ],
+  "allowScripts": {
+    "tree-sitter@0.25.1": true,
+    "tree-sitter-cli@0.26.13": true
+  }
 }

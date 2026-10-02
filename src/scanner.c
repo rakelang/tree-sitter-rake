@@ -13,37 +13,63 @@
 #include <stdint.h>
 #include <string.h>
 
-enum TokenType { NEWLINE, INDENT, DEDENT, ERROR_SENTINEL };
+enum TokenType { NEWLINE, INDENT, DEDENT, ERROR_SENTINEL, BLOCK_COMMENT };
 
 typedef struct {
     Array(uint16_t) indents;
+    bool pending_block_comment;
 } Scanner;
 
 static void skip(TSLexer *lexer) { lexer->advance(lexer, true); }
+static void take(TSLexer *lexer) { lexer->advance(lexer, false); }
 
-// Skips a nested (* ... *) comment whose "(" has been consumed and whose "*"
-// is the lookahead. Returns whether a newline appeared inside it.
-static bool skip_block_comment(TSLexer *lexer, bool *newline) {
+static bool scan_block_comment(TSLexer *lexer) {
+    if (lexer->lookahead != '(') return false;
+    take(lexer);
+    if (lexer->lookahead != '*') return false;
+    take(lexer);
     unsigned depth = 1;
-    skip(lexer);
-    while (depth > 0) {
+    int32_t previous = 0;
+    while (true) {
         if (lexer->eof(lexer)) return false;
         int32_t c = lexer->lookahead;
-        skip(lexer);
-        if (c == '\n') *newline = true;
-        else if (c == '(' && lexer->lookahead == '*') { skip(lexer); depth++; }
-        else if (c == '*' && lexer->lookahead == ')') { skip(lexer); depth--; }
+        take(lexer);
+        if (previous == '(' && c == '*') {
+            depth++;
+        } else if (previous == '*' && c == ')') {
+            depth--;
+            if (depth == 0) break;
+        }
+        previous = c;
     }
+    lexer->mark_end(lexer);
+    lexer->result_symbol = BLOCK_COMMENT;
     return true;
 }
 
 bool tree_sitter_rake_external_scanner_scan(void *payload, TSLexer *lexer, const bool *valid_symbols) {
     Scanner *scanner = (Scanner *)payload;
+    lexer->mark_end(lexer);
+    if (scanner->pending_block_comment) {
+        while (lexer->lookahead == '\n' || lexer->lookahead == ' ' ||
+               lexer->lookahead == '\t' || lexer->lookahead == '\r' ||
+               lexer->lookahead == '\f') {
+            skip(lexer);
+        }
+        scanner->pending_block_comment = false;
+        return valid_symbols[BLOCK_COMMENT] && scan_block_comment(lexer);
+    }
+    if (valid_symbols[BLOCK_COMMENT]) {
+        while (lexer->lookahead == ' ' || lexer->lookahead == '\t' ||
+               lexer->lookahead == '\r' || lexer->lookahead == '\f') {
+            skip(lexer);
+        }
+        if (lexer->lookahead == '(') return scan_block_comment(lexer);
+    }
     // During error recovery every token is valid; layout tokens then add nothing.
     if (valid_symbols[ERROR_SENTINEL]) return false;
     if (!valid_symbols[NEWLINE] && !valid_symbols[INDENT] && !valid_symbols[DEDENT]) return false;
 
-    lexer->mark_end(lexer);
     bool end_of_line = false;
     uint32_t indent = 0;
     for (;;) {
@@ -58,18 +84,11 @@ bool tree_sitter_rake_external_scanner_scan(void *payload, TSLexer *lexer, const
             skip(lexer);
         } else if (c == ' ' || c == '\t' || c == '\r' || c == '\f') {
             skip(lexer);
-        } else if (c == '~') {
+        } else if (c == '(' && end_of_line) {
+            indent = lexer->get_column(lexer);
             skip(lexer);
-            if (lexer->lookahead != '~') return false;
-            while (!lexer->eof(lexer) && lexer->lookahead != '\n') skip(lexer);
-        } else if (c == '(') {
-            uint32_t column = lexer->get_column(lexer);
-            skip(lexer);
-            if (lexer->lookahead != '*') {
-                indent = column;
-                break;
-            }
-            if (!skip_block_comment(lexer, &end_of_line)) return false;
+            scanner->pending_block_comment = lexer->lookahead == '*';
+            break;
         } else {
             indent = lexer->get_column(lexer);
             break;
@@ -84,7 +103,7 @@ bool tree_sitter_rake_external_scanner_scan(void *payload, TSLexer *lexer, const
         return true;
     }
     if (valid_symbols[DEDENT] && indent < current && scanner->indents.size > 0) {
-        array_pop(&scanner->indents);
+        (void)array_pop(&scanner->indents);
         lexer->result_symbol = DEDENT;
         return true;
     }
@@ -109,19 +128,23 @@ void tree_sitter_rake_external_scanner_destroy(void *payload) {
 
 unsigned tree_sitter_rake_external_scanner_serialize(void *payload, char *buffer) {
     Scanner *scanner = (Scanner *)payload;
-    unsigned size = scanner->indents.size * sizeof(uint16_t);
+    unsigned size = 1 + scanner->indents.size * sizeof(uint16_t);
     if (size > TREE_SITTER_SERIALIZATION_BUFFER_SIZE) return 0;
-    if (size > 0) memcpy(buffer, scanner->indents.contents, size);
+    buffer[0] = scanner->pending_block_comment ? 1 : 0;
+    if (scanner->indents.size > 0) {
+        memcpy(buffer + 1, scanner->indents.contents, scanner->indents.size * sizeof(uint16_t));
+    }
     return size;
 }
 
 void tree_sitter_rake_external_scanner_deserialize(void *payload, const char *buffer, unsigned length) {
     Scanner *scanner = (Scanner *)payload;
     array_clear(&scanner->indents);
-    unsigned count = length / sizeof(uint16_t);
+    scanner->pending_block_comment = length > 0 && buffer[0] != 0;
+    unsigned count = length > 0 ? (length - 1) / sizeof(uint16_t) : 0;
     if (count > 0) {
         array_reserve(&scanner->indents, count);
-        memcpy(scanner->indents.contents, buffer, count * sizeof(uint16_t));
+        memcpy(scanner->indents.contents, buffer + 1, count * sizeof(uint16_t));
         scanner->indents.size = count;
     }
 }
