@@ -2929,9 +2929,7 @@ static bool ts_lex(TSLexer *lexer, TSStateId state) {
       if (lookahead == '"') ADVANCE(63);
       if (lookahead == '\\') ADVANCE(15);
       if (lookahead != 0 &&
-          lookahead != '\n' &&
-          lookahead != 0x17f &&
-          lookahead != 0x212a) ADVANCE(3);
+          lookahead != '\n') ADVANCE(3);
       END_STATE();
     case 4:
       ADVANCE_MAP(
@@ -3006,9 +3004,7 @@ static bool ts_lex(TSLexer *lexer, TSStateId state) {
       END_STATE();
     case 15:
       if (lookahead != 0 &&
-          lookahead != '\n' &&
-          lookahead != 0x17f &&
-          lookahead != 0x212a) ADVANCE(3);
+          lookahead != '\n') ADVANCE(3);
       END_STATE();
     case 16:
       if (eof) ADVANCE(17);
@@ -3054,9 +3050,7 @@ static bool ts_lex(TSLexer *lexer, TSStateId state) {
     case 18:
       ACCEPT_TOKEN(sym_line_comment);
       if (lookahead != 0 &&
-          lookahead != '\n' &&
-          lookahead != 0x17f &&
-          lookahead != 0x212a) ADVANCE(18);
+          lookahead != '\n') ADVANCE(18);
       END_STATE();
     case 19:
       ACCEPT_TOKEN(anon_sym_LBRACE);
@@ -36619,7 +36613,7 @@ TS_PUBLIC const TSLanguage *tree_sitter_rake(void) {
     .max_reserved_word_set_size = 0,
     .metadata = {
       .major_version = 0,
-      .minor_version = 4,
+      .minor_version = 5,
       .patch_version = 0,
     },
   };

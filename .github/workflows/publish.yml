@@ -27,9 +27,11 @@ jobs:
           node-version: "24"
           registry-url: https://registry.npmjs.org
           package-manager-cache: false
+      - run: npm install --global npm@12.2.0
       - run: npm ci
       - run: npm test
       - run: npm publish --tag beta --provenance
+      - run: npm dist-tag add "$(node -p '`${require("./package.json").name}@${require("./package.json").version}`')" latest
 
   pypi:
     if: inputs.registry == 'pypi'

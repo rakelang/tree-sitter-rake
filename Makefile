@@ -1,6 +1,6 @@
 LANGUAGE_NAME := tree-sitter-rake
 HOMEPAGE_URL := https://github.com/rakelang/tree-sitter-rake
-VERSION := 0.4.0-beta
+VERSION := 0.5.0-beta
 DESCRIPTION := Tree-sitter grammar for Rake, a vector-first SIMD language
 
 # repository

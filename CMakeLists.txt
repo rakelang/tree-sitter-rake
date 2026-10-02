@@ -1,12 +1,12 @@
 cmake_minimum_required(VERSION 3.13)
 
 project(tree-sitter-rake
-        VERSION "0.4.0"
+        VERSION "0.5.0"
         DESCRIPTION "Tree-sitter grammar for Rake, a vector-first SIMD language"
         HOMEPAGE_URL "https://github.com/rakelang/tree-sitter-rake"
         LANGUAGES C)
 
-set(RAKE_PACKAGE_VERSION "0.4.0-beta")
+set(RAKE_PACKAGE_VERSION "0.5.0-beta")
 
 option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
 option(TREE_SITTER_REUSE_ALLOCATOR "Reuse the library allocator" OFF)
