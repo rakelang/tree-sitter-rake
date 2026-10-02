@@ -179,6 +179,8 @@ export default grammar({
       $.array_type,
       $.view_type,
       $.pointer_type,
+      $.function_type,
+      $.void_type,
       $.mutable_type,
       $.type_identifier,
     ),
@@ -198,6 +200,10 @@ export default grammar({
     ),
 
     mask_type: _ => 'mask',
+    function_type: $ => prec.right(seq(
+      'slow', '(', commaSep($.type), ')', '->', field('result', $.type),
+    )),
+    void_type: _ => seq('(', ')'),
     pack_type: $ => seq('pack', field('schema', $.type_identifier)),
     stack_type: $ => seq('stack', field('schema', $.type_identifier)),
     array_type: $ => seq('[', field('count', $.integer_literal), ']', field('element', $.type)),
