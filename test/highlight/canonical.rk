@@ -14,11 +14,11 @@ crunch advance(positions: f32s, velocities: f32s) -> f32s:
 ~~^ operator.flow
 ~~                ^^ operator.flow
   | result: f32s <| positions + scaled
-  return result
-~~^ keyword
+  result
+~~^ variable
 
 rake safe_root(values: f32s) -> f32s:
-  tine #valid when values >= <0.0>
+  tine #valid means values >= <0.0>
 ~~^ keyword
 ~~     ^ tag
 
@@ -42,7 +42,7 @@ crunch stateful(values: f32s) -> f32s:
   accumulator: f32s := values
   accumulator <- shuffle(accumulator, [1, 0, 3, 2])
   inspect(accumulator)
-  return accumulator
+  accumulator
 
 slow scalar() -> i32:
   let answer = slow { 3 }

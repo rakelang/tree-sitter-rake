@@ -353,7 +353,7 @@ export default grammar({
     tine_declaration: $ => seq(
       'tine',
       field('name', $.tine),
-      'when',
+      'means',
       field('condition', $.predicate),
       $._newline,
     ),

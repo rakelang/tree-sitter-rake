@@ -10,7 +10,7 @@ Nested block comments
 crunch absolute(values: f32s) -> f32s:
   let result = abs(values)
   (* A body comment (* can nest here too. *) *)
-  return result (* and can follow an expression *)
+  result (* and can follow an expression *)
 
 ---
 
@@ -37,7 +37,7 @@ crunch absolute(values: f32s) -> f32s:
             (primary_expression
               (identifier))))))
     (block_comment)
-    (return_statement
+    (expression_statement
       (expression
         (primary_expression
           (identifier))))

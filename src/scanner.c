@@ -88,6 +88,12 @@ bool tree_sitter_rake_external_scanner_scan(void *payload, TSLexer *lexer, const
             skip(lexer);
         } else if (c == ' ' || c == '\t' || c == '\r' || c == '\f') {
             skip(lexer);
+        } else if (c == '~' && end_of_line) {
+            // A comment-only line cannot close an indented body. Look past it
+            // to the next source line, leaving the comment for the extra lexer.
+            skip(lexer);
+            if (lexer->lookahead != '~') break;
+            while (!lexer->eof(lexer) && lexer->lookahead != '\n') skip(lexer);
         } else if (c == '(' && end_of_line) {
             indent = lexer->get_column(lexer);
             // Emit the comment itself when it is valid here. Deferring it to

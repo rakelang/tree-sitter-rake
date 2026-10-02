@@ -87,10 +87,10 @@ Fused flow and masked rake
 crunch advance(positions: f32s, velocities: f32s) -> f32s:
   | scaled: f32s <| velocities * <0.5>
   | result: f32s <| positions + scaled
-  return result
+  result
 
 rake safe_root(values: f32s) -> f32s:
-  tine #valid when values >= <0.0>
+  tine #valid means values >= <0.0>
 
   through #valid else <0.0> into rooted:
     sqrt(values)
@@ -142,8 +142,8 @@ rake safe_root(values: f32s) -> f32s:
           (expression
             (primary_expression
               (identifier))))))
-    (return_statement
-      value: (expression
+    (expression_statement
+      (expression
         (primary_expression
           (identifier)))))
   (rake_definition
@@ -202,7 +202,7 @@ crunch stateful(values: f32s) -> f32s:
   accumulator: f32s := values
   accumulator <- shuffle(accumulator, [1, 0, 3, 2])
   inspect(accumulator)
-  return accumulator
+  accumulator
 
 ---
 
@@ -243,7 +243,7 @@ crunch stateful(values: f32s) -> f32s:
           (expression
             (primary_expression
               (identifier))))))
-    (return_statement
+    (expression_statement
       (expression
         (primary_expression
           (identifier))))))

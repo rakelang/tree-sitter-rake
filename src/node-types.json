@@ -3009,6 +3009,10 @@
     "named": true
   },
   {
+    "type": "means",
+    "named": false
+  },
+  {
     "type": "mut",
     "named": false
   },
@@ -3162,10 +3166,6 @@
   },
   {
     "type": "using",
-    "named": false
-  },
-  {
-    "type": "when",
     "named": false
   },
   {

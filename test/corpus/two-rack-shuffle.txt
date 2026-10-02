@@ -3,7 +3,7 @@ Two-rack shuffle
 ==================
 
 crunch combine(left: u8s, right: u8s) -> u32:
-  return bitmask(shuffle(left, right, [0, 1, 16, 17]))
+  bitmask(shuffle(left, right, [0, 1, 16, 17]))
 
 ---
 
@@ -23,7 +23,7 @@ crunch combine(left: u8s, right: u8s) -> u32:
             (rack_type)))))
     (type
       (storage_type))
-    (return_statement
+    (expression_statement
       (expression
         (call_expression
           (identifier)
