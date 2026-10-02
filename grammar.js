@@ -430,11 +430,30 @@ export default grammar({
     ),
 
     expression: $ => choice(
+      $.slow_block,
       $.conditional_expression,
       $.binary_expression,
       $.unary_expression,
       $._postfix_expression,
     ),
+
+    slow_block: $ => seq(
+      'slow', '{',
+      choice(
+        optional($._slow_contents),
+        $._newline,
+        seq($._newline, $._indent, optional($._slow_contents), $._dedent),
+      ),
+      '}',
+    ),
+
+    _slow_contents: $ => choice(seq(
+      repeat1(choice(
+        seq($._simple_statement, choice($._newline, seq(';', repeat($._newline)))),
+        $._compound_statement,
+      )),
+      optional($._simple_statement),
+    ), $._simple_statement),
 
     _postfix_expression: $ => choice(
       $.field_expression,

@@ -43,3 +43,8 @@ crunch stateful(values: f32s) -> f32s:
   accumulator <- shuffle(accumulator, [1, 0, 3, 2])
   inspect(accumulator)
   return accumulator
+
+slow scalar() -> i32:
+  let answer = slow { 3 }
+~~             ^ keyword
+  return answer
