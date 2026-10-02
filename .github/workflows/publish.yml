@@ -11,6 +11,10 @@ on:
           - npm
           - pypi
           - crates-io
+      npm_tags_only:
+        description: Update npm release labels for an already published version
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -30,7 +34,8 @@ jobs:
       - run: npm install --global npm@12.2.0
       - run: npm ci
       - run: npm test
-      - run: npm publish --tag beta --provenance
+      - if: ${{ !inputs.npm_tags_only }}
+        run: npm publish --tag beta --provenance
       - run: npm dist-tag add "$(node -p '`${require("./package.json").name}@${require("./package.json").version}`')" latest
 
   pypi:
