@@ -7,7 +7,7 @@ Nested block comments
 (* A leading comment (* can nest too. *) *)
 
 (* A second leading comment follows a blank line. *)
-crunch absolute(values: f32s) -> f32s:
+scratch absolute(values: f32s) -> f32s:
   let result = abs(values)
   (* A body comment (* can nest here too. *) *)
   result (* and can follow an expression *)
@@ -18,7 +18,7 @@ crunch absolute(values: f32s) -> f32s:
   (line_comment)
   (block_comment)
   (block_comment)
-  (crunch_definition
+  (scratch_definition
     (identifier)
     (parameter_list
       (parameter

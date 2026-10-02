@@ -1,4 +1,4 @@
-stack Samples {
+pack Samples {
 ~~ <- keyword
 ~~    ^ type
   f32: value;
@@ -6,10 +6,10 @@ stack Samples {
   u8: quality;
 }
 
-crunch advance(positions: f32s, velocities: f32s) -> f32s:
+scratch advance(positions: f32s, velocities: f32s) -> f32s:
 ~~ <- keyword
-~~     ^ function
-~~             ^ variable.parameter
+~~      ^ function
+~~              ^ variable.parameter
   | scaled: f32s <| velocities * <0.5>
 ~~^ operator.flow
 ~~                ^^ operator.flow
@@ -30,7 +30,7 @@ rake safe_root(values: f32s) -> f32s:
     | _      => <0.0>
 
 run scale_values(
-  input: pack Samples,
+  input: stack Samples,
   <count: i64>,
   <scale: f32>
 ) -> f32:
@@ -38,7 +38,7 @@ run scale_values(
     let quality: u32s = widen(chunk.quality)
     yield chunk.value * <scale>
 
-crunch stateful(values: f32s) -> f32s:
+scratch stateful(values: f32s) -> f32s:
   accumulator: f32s := values
   accumulator <- shuffle(accumulator, [1, 0, 3, 2])
   inspect(accumulator)
@@ -48,3 +48,14 @@ slow scalar() -> i32:
   let answer = slow { 3 }
 ~~             ^ keyword
   return answer
+
+union foreign_value_t from "values.h" {
+~~ <- keyword
+~~    ^ type
+  i64: i64;
+~~^ type.builtin
+}
+
+slow integer(value: ptr const foreign_value_t) -> i64:
+  return value.i64
+~~             ^ property

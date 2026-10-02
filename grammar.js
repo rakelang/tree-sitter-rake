@@ -29,9 +29,10 @@ export default grammar({
     source_file: $ => repeat($._definition),
 
     _definition: $ => choice(
-      seq($.stack_definition, $._newline),
+      seq($.pack_definition, $._newline),
       seq($.record_definition, $._newline),
-      $.crunch_definition,
+      seq($.union_definition, $._newline),
+      $.scratch_definition,
       $.rake_definition,
       $.run_definition,
       $.slow_definition,
@@ -43,8 +44,8 @@ export default grammar({
 
     line_comment: _ => /~~[^\n]*/,
 
-    stack_definition: $ => seq(
-      'stack',
+    pack_definition: $ => seq(
+      'pack',
       field('name', $.type_identifier),
       '{',
       repeat1($.field_group),
@@ -60,22 +61,35 @@ export default grammar({
 
     record_definition: $ => seq(
       'record',
-      field('name', $.type_identifier),
-      optional(seq('from', field('header', $.string_literal))),
-      '{',
-      repeat1($.record_field_group),
-      '}',
+      field('name', $._aggregate_identifier),
+      choice(
+        seq('from', field('header', $.string_literal), '{', repeat($.record_field_group), '}'),
+        seq('{', repeat1($.record_field_group), '}'),
+      ),
     ),
 
     record_field_group: $ => seq(
       field('type', $.type),
       ':',
-      commaSep1(field('name', $.identifier)),
+      commaSep1(field('name', $._field_identifier)),
       ';',
     ),
 
-    crunch_definition: $ => seq(
-      'crunch',
+    union_definition: $ => seq(
+      'union',
+      field('name', $._aggregate_identifier),
+      'from',
+      field('header', $.string_literal),
+      '{',
+      repeat1($.record_field_group),
+      '}',
+    ),
+
+    _field_identifier: $ => choice($.identifier, alias($.storage_type, $.identifier)),
+    _aggregate_identifier: $ => choice($.type_identifier, alias($.identifier, $.type_identifier)),
+
+    scratch_definition: $ => seq(
+      'scratch',
       field('name', $.identifier),
       $.parameter_list,
       '->',
@@ -174,15 +188,15 @@ export default grammar({
       $.storage_type,
       $.rack_type,
       $.mask_type,
-      $.pack_type,
       $.stack_type,
+      $.pack_type,
       $.array_type,
       $.view_type,
       $.pointer_type,
       $.function_type,
       $.void_type,
       $.mutable_type,
-      $.type_identifier,
+      $._aggregate_identifier,
     ),
 
     storage_type: _ => choice(
@@ -204,11 +218,11 @@ export default grammar({
       'slow', '(', commaSep($.type), ')', '->', field('result', $.type),
     )),
     void_type: _ => seq('(', ')'),
-    pack_type: $ => seq('pack', field('schema', $.type_identifier)),
     stack_type: $ => seq('stack', field('schema', $.type_identifier)),
+    pack_type: $ => seq('pack', field('schema', $.type_identifier)),
     array_type: $ => seq('[', field('count', $.integer_literal), ']', field('element', $.type)),
     view_type: $ => seq('[', ']', field('element', $.type)),
-    pointer_type: $ => seq('ptr', field('target', $.type)),
+    pointer_type: $ => seq('ptr', optional('const'), field('target', $.type)),
     mutable_type: $ => seq('mut', field('target', $.type)),
 
     // A body: a line ending in ':' followed by indented statements.
@@ -314,7 +328,7 @@ export default grammar({
       'for',
       field('binding', $.identifier),
       'in',
-      field('pack', $.identifier),
+      field('stack', $.identifier),
       'using',
       field('domain', $.rack_type),
       'up',
@@ -468,6 +482,7 @@ export default grammar({
       $.call_expression,
       $.conversion_expression,
       $.record_expression,
+      $.stack_expression,
       $.array_expression,
       $.scalar_expression,
       $.tine,
@@ -515,14 +530,22 @@ export default grammar({
     )),
 
     record_expression: $ => seq(
-      field('record', $.type_identifier),
+      field('record', $._aggregate_identifier),
+      '{',
+      commaSep($.field_initializer),
+      '}',
+    ),
+
+    stack_expression: $ => seq(
+      'stack',
+      field('schema', $.type_identifier),
       '{',
       commaSep($.field_initializer),
       '}',
     ),
 
     field_initializer: $ => seq(
-      field('field', $.identifier),
+      field('field', $._field_identifier),
       ':',
       field('value', $.expression),
     ),
@@ -558,7 +581,7 @@ export default grammar({
     field_expression: $ => prec.left(PREC.postfix, seq(
       field('value', $._postfix_expression),
       '.',
-      field('field', $.identifier),
+      field('field', $._field_identifier),
     )),
 
     index_expression: $ => prec.left(PREC.postfix, seq(

@@ -2,13 +2,13 @@
 Two-rack shuffle
 ==================
 
-crunch combine(left: u8s, right: u8s) -> u32:
+scratch combine(left: u8s, right: u8s) -> u32:
   bitmask(shuffle(left, right, [0, 1, 16, 17]))
 
 ---
 
 (source_file
-  (crunch_definition
+  (scratch_definition
     (identifier)
     (parameter_list
       (parameter

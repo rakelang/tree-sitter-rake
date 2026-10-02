@@ -1,14 +1,14 @@
 ==================
-Stack and run
+Pack, stack and run
 ==================
 
-stack Samples {
+pack Samples {
   f32: value;
   u8: quality;
 }
 
 run scale_values(
-  input: pack Samples,
+  input: stack Samples,
   <count: i64>,
   <scale: f32>
 ) -> f32:
@@ -19,7 +19,7 @@ run scale_values(
 ---
 
 (source_file
-  (stack_definition
+  (pack_definition
     name: (type_identifier)
     (field_group
       type: (storage_type)
@@ -34,7 +34,7 @@ run scale_values(
         (value_parameter
           name: (identifier)
           type: (type
-            (pack_type
+            (stack_type
               schema: (type_identifier)))))
       (parameter
         (scalar_parameter
@@ -50,7 +50,7 @@ run scale_values(
       (storage_type))
     (traversal_statement
       binding: (identifier)
-      pack: (identifier)
+      stack: (identifier)
       domain: (rack_type)
       count: (scalar_expression
         value: (scalar_value
@@ -84,7 +84,7 @@ run scale_values(
 Fused flow and masked rake
 ==================
 
-crunch advance(positions: f32s, velocities: f32s) -> f32s:
+scratch advance(positions: f32s, velocities: f32s) -> f32s:
   | scaled: f32s <| velocities * <0.5>
   | result: f32s <| positions + scaled
   result
@@ -102,7 +102,7 @@ rake safe_root(values: f32s) -> f32s:
 ---
 
 (source_file
-  (crunch_definition
+  (scratch_definition
     name: (identifier)
     (parameter_list
       (parameter
@@ -198,7 +198,7 @@ rake safe_root(values: f32s) -> f32s:
 Mutable locations and static lists
 ==================
 
-crunch stateful(values: f32s) -> f32s:
+scratch stateful(values: f32s) -> f32s:
   accumulator: f32s := values
   accumulator <- shuffle(accumulator, [1, 0, 3, 2])
   inspect(accumulator)
@@ -207,7 +207,7 @@ crunch stateful(values: f32s) -> f32s:
 ---
 
 (source_file
-  (crunch_definition
+  (scratch_definition
     (identifier)
     (parameter_list
       (parameter
@@ -247,3 +247,16 @@ crunch stateful(values: f32s) -> f32s:
       (expression
         (primary_expression
           (identifier))))))
+
+==================
+Opaque C pointer types
+==================
+
+record wasm_trap_t from "wasmtime.h" {}
+
+---
+
+(source_file
+  (record_definition
+    (type_identifier)
+    (string_literal)))
