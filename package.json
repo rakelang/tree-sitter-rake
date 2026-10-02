@@ -2,8 +2,8 @@
   "name": "tree-sitter-rake",
   "version": "0.4.0-beta",
   "description": "Tree-sitter grammar for Rake, a vector-first SIMD language",
-  "main": "bindings/node",
-  "types": "bindings/node",
+  "main": "bindings/node/index.js",
+  "types": "bindings/node/index.d.ts",
   "type": "module",
   "files": [
     "binding.gyp",
@@ -14,7 +14,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/rakelang/tree-sitter-rake.git"
+    "url": "git+https://github.com/rakelang/tree-sitter-rake.git"
   },
   "keywords": [
     "tree-sitter",
