@@ -6,7 +6,7 @@ project(tree-sitter-rake
         HOMEPAGE_URL "https://github.com/rakelang/tree-sitter-rake"
         LANGUAGES C)
 
-set(RAKE_PACKAGE_VERSION "0.5.0-beta")
+set(RAKE_PACKAGE_VERSION "0.5.0-beta.1")
 
 option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
 option(TREE_SITTER_REUSE_ALLOCATOR "Reuse the library allocator" OFF)

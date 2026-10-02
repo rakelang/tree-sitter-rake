@@ -2,6 +2,11 @@
 Nested block comments
 ==================
 
+~~ Comments and blank lines don't change the top-level layout.
+
+(* A leading comment (* can nest too. *) *)
+
+(* A second leading comment follows a blank line. *)
 crunch absolute(values: f32s) -> f32s:
   let result = abs(values)
   (* A body comment (* can nest here too. *) *)
@@ -10,6 +15,9 @@ crunch absolute(values: f32s) -> f32s:
 ---
 
 (source_file
+  (line_comment)
+  (block_comment)
+  (block_comment)
   (crunch_definition
     (identifier)
     (parameter_list

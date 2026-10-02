@@ -60,8 +60,12 @@ bool tree_sitter_rake_external_scanner_scan(void *payload, TSLexer *lexer, const
         return valid_symbols[BLOCK_COMMENT] && scan_block_comment(lexer);
     }
     if (valid_symbols[BLOCK_COMMENT]) {
+        // At the start of a source file, no layout token is expected. Still
+        // recognize a block comment after blank lines or line comments.
+        bool layout_expected = valid_symbols[NEWLINE] || valid_symbols[INDENT] || valid_symbols[DEDENT];
         while (lexer->lookahead == ' ' || lexer->lookahead == '\t' ||
-               lexer->lookahead == '\r' || lexer->lookahead == '\f') {
+               lexer->lookahead == '\r' || lexer->lookahead == '\f' ||
+               (!layout_expected && lexer->lookahead == '\n')) {
             skip(lexer);
         }
         if (lexer->lookahead == '(') return scan_block_comment(lexer);
@@ -86,8 +90,14 @@ bool tree_sitter_rake_external_scanner_scan(void *payload, TSLexer *lexer, const
             skip(lexer);
         } else if (c == '(' && end_of_line) {
             indent = lexer->get_column(lexer);
-            skip(lexer);
-            scanner->pending_block_comment = lexer->lookahead == '*';
+            // Emit the comment itself when it is valid here. Deferring it to
+            // the next scan requires a layout token to carry that state.
+            if (valid_symbols[BLOCK_COMMENT]) {
+                if (scan_block_comment(lexer)) return true;
+            } else {
+                skip(lexer);
+                scanner->pending_block_comment = lexer->lookahead == '*';
+            }
             break;
         } else {
             indent = lexer->get_column(lexer);
