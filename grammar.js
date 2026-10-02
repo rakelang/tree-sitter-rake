@@ -34,6 +34,7 @@ export default grammar({
       seq($.union_definition, $._newline),
       $.scratch_definition,
       $.rake_definition,
+      seq($.global_tine_definition, $._newline),
       $.run_definition,
       $.slow_definition,
       seq($.extern_definition, $._newline),
@@ -107,7 +108,7 @@ export default grammar({
       $._newline,
       $._indent,
       repeat(seq($.let_statement, $._newline)),
-      repeat1($.tine_declaration),
+      repeat($.tine_declaration),
       repeat1($.through_statement),
       $.sweep_statement,
       $._dedent,
@@ -378,18 +379,33 @@ export default grammar({
       $._newline,
     ),
 
+    global_tine_definition: $ => seq(
+      'tine', field('name', $.tine), $.parameter_list,
+      'means', field('condition', $.predicate),
+    ),
+
+    tine_application: $ => seq(
+      field('predicate', $.tine), '(', commaSep($.predicate_arithmetic), ')',
+    ),
+
+    gap_predicate: $ => prec.left(4, seq(
+      choice($.tine, $.tine_application, $.comparison_predicate, seq('(', $.predicate, ')')), 'gaps',
+    )),
+
     predicate: $ => choice(
       prec.left(1, seq($.predicate, 'or', $.predicate)),
       prec.left(2, seq($.predicate, 'and', $.predicate)),
       prec.right(3, seq('not', $.predicate)),
-      prec.left(4, seq(
-        $.predicate_arithmetic,
-        choice('<', '<=', '>', '>=', '=', '!='),
-        $.predicate_arithmetic,
-      )),
+      $.comparison_predicate,
       $.tine,
+      $.tine_application,
+      $.gap_predicate,
       seq('(', $.predicate, ')'),
     ),
+
+    comparison_predicate: $ => prec.left(4, seq(
+      $.predicate_arithmetic, choice('<', '<=', '>', '>=', '=', '!='), $.predicate_arithmetic,
+    )),
 
     predicate_arithmetic: $ => choice(
       prec.left(5, seq($.predicate_arithmetic, choice('+', '-'), $.predicate_arithmetic)),
@@ -410,9 +426,8 @@ export default grammar({
 
     through_statement: $ => seq(
       'through',
-      field('mask', choice($.tine, seq('(', $.predicate, ')'))),
-      'else',
-      field('passthrough', $._simple_value),
+      field('mask', $._tine_selector),
+      optional(seq('else', field('passthrough', $._simple_value))),
       'into',
       field('name', $.identifier),
       ':',
@@ -423,6 +438,15 @@ export default grammar({
       $._newline,
       $._dedent,
     ),
+
+    _tine_selector: $ => choice(
+      $.tine, $.tine_application, seq('(', $.predicate, ')'),
+      alias($._selector_gap_predicate, $.gap_predicate),
+    ),
+
+    _selector_gap_predicate: $ => prec.left(4, seq(
+      choice($.tine, $.tine_application, seq('(', $.predicate, ')')), 'gaps',
+    )),
 
     _simple_value: $ => choice(
       $.scalar_expression,
@@ -442,7 +466,7 @@ export default grammar({
 
     sweep_arm: $ => seq(
       '|',
-      field('selector', choice($.tine, '_')),
+      field('selector', choice($._tine_selector, '_')),
       '=>',
       field('value', $.expression),
       $._newline,

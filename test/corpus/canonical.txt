@@ -160,14 +160,15 @@ rake safe_root(values: f32s) -> f32s:
       name: (tine
         (tine_name))
       condition: (predicate
-        (predicate_arithmetic
-          (predicate_atom
-            (identifier)))
-        (predicate_arithmetic
-          (predicate_atom
-            (scalar_expression
-              value: (scalar_value
-                (float_literal)))))))
+        (comparison_predicate
+          (predicate_arithmetic
+            (predicate_atom
+              (identifier)))
+          (predicate_arithmetic
+            (predicate_atom
+              (scalar_expression
+                value: (scalar_value
+                  (float_literal))))))))
     (through_statement
       mask: (tine
         (tine_name))

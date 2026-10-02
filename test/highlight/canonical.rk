@@ -29,6 +29,19 @@ rake safe_root(values: f32s) -> f32s:
     | #valid => rooted
     | _      => <0.0>
 
+tine #global(values: f32s) means values >= <0.0>
+~~ <- keyword
+~~    ^ tag
+~~            ^ variable.parameter
+
+rake global_root(values: f32s) -> f32s:
+  through #global(values) into rooted:
+    sqrt(values)
+  sweep:
+    | #global(values) => rooted
+    | #global(values) gaps => <0.0>
+~~                    ^ operator
+
 run scale_values(
   input: stack Samples,
   <count: i64>,
