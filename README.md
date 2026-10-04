@@ -31,7 +31,11 @@ distribution metadata, then installs and tests each artifact in a fresh
 environment. Rust builds and tests both the checkout and packaged crate.
 Go and Swift bindings run their own checks too.
 
-Publish the tested npm and Python artifacts. Cargo verifies that its dry-run
-archive matches the tested crate before requesting registry credentials.
+Publish the tested npm and Python artifacts. Cargo uses `cargo package` to
+verify its archive matches the tested crate before requesting registry credentials.
 Successful uploads establish publication only. Our checks are completed
 before upload, without using a registry's acceptance checks as a smoke suite.
+
+The publishing workflow accepts `source_ref` for a checked release tag or
+commit. Its package checks and publishing jobs all use that source, so a
+workflow repair can publish an existing release without changing its tag.

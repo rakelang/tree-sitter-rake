@@ -15,6 +15,10 @@ on:
         description: Update npm release labels for an already published version
         type: boolean
         default: false
+      source_ref:
+        description: Checked source commit or release tag (defaults to the workflow ref)
+        type: string
+        default: ""
 
 permissions:
   contents: read
@@ -23,6 +27,8 @@ permissions:
 jobs:
   check-packages:
     uses: ./.github/workflows/check-bindings.yml
+    with:
+      source_ref: ${{ inputs.source_ref }}
 
   npm:
     if: inputs.registry == 'npm'
@@ -31,6 +37,8 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.source_ref || github.ref }}
       - uses: actions/setup-node@v6
         with:
           node-version: "24"
@@ -53,6 +61,8 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.source_ref || github.ref }}
       - uses: actions/download-artifact@v4
         with:
           name: python-distributions
@@ -66,13 +76,15 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.source_ref || github.ref }}
       - uses: actions/download-artifact@v4
         with:
           name: rust-distribution
           path: ${{ runner.temp }}/rust-distribution
       - name: Verify publication matches the tested crate
         run: |
-          cargo publish --dry-run --locked
+          cargo package --locked
           version="$(sed -n 's/^version = "\([^"]*\)"$/\1/p' Cargo.toml)"
           cmp "$RUNNER_TEMP/rust-distribution/tree-sitter-rake-$version.crate" "target/package/tree-sitter-rake-$version.crate"
       - id: auth
