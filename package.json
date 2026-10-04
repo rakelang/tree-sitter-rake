@@ -1,6 +1,6 @@
 {
   "name": "tree-sitter-rake",
-  "version": "0.6.0-beta",
+  "version": "0.7.0",
   "description": "Tree-sitter grammar for Rake, a vector-first SIMD language",
   "main": "bindings/node/index.js",
   "types": "bindings/node/index.d.ts",
@@ -35,7 +35,7 @@
   },
   "scripts": {
     "build": "tree-sitter generate",
-    "test": "tree-sitter generate && tree-sitter test && node --test bindings/node/binding_test.js",
+    "test": "tree-sitter generate && npm rebuild && tree-sitter test && node --test bindings/node/binding_test.js",
     "test:differential": "bash ../rake/test/parser_differential.sh",
     "parse": "tree-sitter parse"
   },

@@ -1,7 +1,7 @@
 [package]
 name = "tree-sitter-rake"
 description = "Tree-sitter grammar for Rake, a vector-first SIMD language"
-version = "0.6.0-beta"
+version = "0.7.0"
 authors = ["Kieran Rosenberg"]
 license = "MIT"
 readme = "README.md"
@@ -32,3 +32,6 @@ cc = "1.2"
 
 [dev-dependencies]
 tree-sitter = "0.26.11"
+
+[profile.dev]
+opt-level = 1

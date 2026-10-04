@@ -51,10 +51,17 @@ pub const TAGS_QUERY: &str = include_str!("../../queries/tags.scm");
 #[cfg(test)]
 mod tests {
     #[test]
-    fn test_can_load_grammar() {
+    fn test_can_parse_packaged_grammar_and_load_highlighting() {
         let mut parser = tree_sitter::Parser::new();
+        let language = super::LANGUAGE.into();
         parser
-            .set_language(&super::LANGUAGE.into())
+            .set_language(&language)
             .expect("Error loading Rake parser");
+        let tree = parser
+            .parse("scratch identity(values: f32s) -> f32s:\n  values\n", None)
+            .expect("Error parsing Rake source");
+        assert!(!tree.root_node().has_error());
+        tree_sitter::Query::new(&language, super::HIGHLIGHTS_QUERY)
+            .expect("Error loading packaged highlighting queries");
     }
 }

@@ -1,5 +1,7 @@
 # Rust artifacts
 target/
+.direnv/
+result
 
 # Node artifacts
 build/
@@ -16,6 +18,7 @@ _obj/
 .venv/
 __pycache__/
 dist/
+wheelhouse/
 *.egg-info
 *.whl
 

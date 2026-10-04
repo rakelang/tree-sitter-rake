@@ -1,6 +1,6 @@
 LANGUAGE_NAME := tree-sitter-rake
 HOMEPAGE_URL := https://github.com/rakelang/tree-sitter-rake
-VERSION := 0.6.0-beta
+VERSION := 0.7.0
 DESCRIPTION := Tree-sitter grammar for Rake, a vector-first SIMD language
 
 # repository
@@ -18,8 +18,8 @@ PCLIBDIR ?= $(LIBDIR)/pkgconfig
 
 # source/object files
 PARSER := $(SRC_DIR)/parser.c
-EXTRAS := $(filter-out $(PARSER),$(wildcard $(SRC_DIR)/*.c))
-OBJS := $(patsubst %.c,%.o,$(PARSER) $(EXTRAS))
+SCANNER := $(SRC_DIR)/scanner.c
+OBJS := $(patsubst %.c,%.o,$(PARSER) $(SCANNER))
 
 # flags
 ARFLAGS ?= rcs
