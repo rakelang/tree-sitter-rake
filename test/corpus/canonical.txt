@@ -9,12 +9,15 @@ pack Samples {
 
 run scale_values(
   input: stack Samples,
-  <count: i64>,
+  output: stack Samples,
   <scale: f32>
-) -> f32:
-  for chunk in input using f32s up to <count>:
-    let quality: u32s = widen(chunk.quality)
-    yield chunk.value * <scale>
+) -> stack Samples:
+  let quality: u32s = widen(input.quality)
+  tine #positive means input.value > <0.0>
+  output with { value: input.value * <scale> } where #positive
+
+run survivors(particles: stack Samples) -> stack Samples:
+  compact particles with { value: particles.value + <1.0> } where (#alive and #fast) gaps
 
 ---
 
@@ -37,48 +40,100 @@ run scale_values(
             (stack_type
               schema: (type_identifier)))))
       (parameter
-        (scalar_parameter
-          name: (scalar_name)
+        (value_parameter
+          name: (identifier)
           type: (type
-            (storage_type))))
+            (stack_type
+              schema: (type_identifier)))))
       (parameter
         (scalar_parameter
           name: (scalar_name)
           type: (type
             (storage_type)))))
     result: (type
-      (storage_type))
-    (traversal_statement
-      binding: (identifier)
-      stack: (identifier)
-      domain: (rack_type)
-      count: (scalar_expression
-        value: (scalar_value
-          (identifier)))
-      (let_statement
-        name: (identifier)
-        type: (type
-          (rack_type))
-        value: (expression
-          (call_expression
-            function: (identifier)
-            (expression
-              (field_expression
-                value: (primary_expression
-                  (identifier))
-                field: (identifier))))))
-      (yield_statement
-        value: (expression
-          (binary_expression
-            (expression
-              (field_expression
-                value: (primary_expression
-                  (identifier))
-                field: (identifier)))
-            (expression
+      (stack_type
+        schema: (type_identifier)))
+    (let_statement
+      name: (identifier)
+      type: (type
+        (rack_type))
+      value: (expression
+        (call_expression
+          function: (identifier)
+          (expression
+            (field_expression
+              value: (primary_expression
+                (identifier))
+              field: (identifier))))))
+    (tine_declaration
+      name: (tine
+        (tine_name))
+      condition: (predicate
+        (comparison_predicate
+          (predicate_arithmetic
+            (predicate_atom
+              (predicate_atom
+                (identifier))
+              (identifier)))
+          (predicate_arithmetic
+            (predicate_atom
               (scalar_expression
                 value: (scalar_value
-                  (identifier))))))))))
+                  (float_literal))))))))
+    (stack_result
+      stack: (identifier)
+      fields: (field_replacements
+        (field_initializer
+          field: (identifier)
+          value: (expression
+            (binary_expression
+              (expression
+                (field_expression
+                  value: (primary_expression
+                    (identifier))
+                  field: (identifier)))
+              (expression
+                (scalar_expression
+                  value: (scalar_value
+                    (identifier))))))))
+      selection: (tine
+        (tine_name))))
+  (run_definition
+    name: (identifier)
+    (parameter_list
+      (parameter
+        (value_parameter
+          name: (identifier)
+          type: (type
+            (stack_type
+              schema: (type_identifier))))))
+    result: (type
+      (stack_type
+        schema: (type_identifier)))
+    (stack_result
+      stack: (identifier)
+      fields: (field_replacements
+        (field_initializer
+          field: (identifier)
+          value: (expression
+            (binary_expression
+              (expression
+                (field_expression
+                  value: (primary_expression
+                    (identifier))
+                  field: (identifier)))
+              (expression
+                (scalar_expression
+                  value: (scalar_value
+                    (float_literal))))))))
+      selection: (gap_predicate
+        (predicate
+          (predicate
+            (tine
+              (tine_name)))
+          (predicate
+            (tine
+              (tine_name))))))))
 
 ==================
 Fused flow and masked rake

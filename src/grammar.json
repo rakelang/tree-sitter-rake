@@ -1393,6 +1393,10 @@
         {
           "type": "SYMBOL",
           "name": "_compound_statement"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "tine_declaration"
         }
       ]
     },
@@ -1425,7 +1429,7 @@
         },
         {
           "type": "SYMBOL",
-          "name": "yield_statement"
+          "name": "stack_result"
         },
         {
           "type": "SYMBOL",
@@ -1451,10 +1455,6 @@
         {
           "type": "SYMBOL",
           "name": "while_statement"
-        },
-        {
-          "type": "SYMBOL",
-          "name": "traversal_statement"
         },
         {
           "type": "SYMBOL",
@@ -1782,20 +1782,158 @@
         }
       ]
     },
-    "yield_statement": {
+    "stack_result": {
+      "type": "CHOICE",
+      "members": [
+        {
+          "type": "SEQ",
+          "members": [
+            {
+              "type": "FIELD",
+              "name": "stack",
+              "content": {
+                "type": "SYMBOL",
+                "name": "identifier"
+              }
+            },
+            {
+              "type": "STRING",
+              "value": "with"
+            },
+            {
+              "type": "FIELD",
+              "name": "fields",
+              "content": {
+                "type": "SYMBOL",
+                "name": "field_replacements"
+              }
+            },
+            {
+              "type": "CHOICE",
+              "members": [
+                {
+                  "type": "SEQ",
+                  "members": [
+                    {
+                      "type": "STRING",
+                      "value": "where"
+                    },
+                    {
+                      "type": "FIELD",
+                      "name": "selection",
+                      "content": {
+                        "type": "SYMBOL",
+                        "name": "_tine_selector"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "BLANK"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "SEQ",
+          "members": [
+            {
+              "type": "STRING",
+              "value": "compact"
+            },
+            {
+              "type": "FIELD",
+              "name": "stack",
+              "content": {
+                "type": "SYMBOL",
+                "name": "identifier"
+              }
+            },
+            {
+              "type": "CHOICE",
+              "members": [
+                {
+                  "type": "SEQ",
+                  "members": [
+                    {
+                      "type": "STRING",
+                      "value": "with"
+                    },
+                    {
+                      "type": "FIELD",
+                      "name": "fields",
+                      "content": {
+                        "type": "SYMBOL",
+                        "name": "field_replacements"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "BLANK"
+                }
+              ]
+            },
+            {
+              "type": "STRING",
+              "value": "where"
+            },
+            {
+              "type": "FIELD",
+              "name": "selection",
+              "content": {
+                "type": "SYMBOL",
+                "name": "_tine_selector"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "field_replacements": {
       "type": "SEQ",
       "members": [
         {
           "type": "STRING",
-          "value": "yield"
+          "value": "{"
         },
         {
-          "type": "FIELD",
-          "name": "value",
-          "content": {
-            "type": "SYMBOL",
-            "name": "expression"
-          }
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "SEQ",
+              "members": [
+                {
+                  "type": "SYMBOL",
+                  "name": "field_initializer"
+                },
+                {
+                  "type": "REPEAT",
+                  "content": {
+                    "type": "SEQ",
+                    "members": [
+                      {
+                        "type": "STRING",
+                        "value": ","
+                      },
+                      {
+                        "type": "SYMBOL",
+                        "name": "field_initializer"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
+        },
+        {
+          "type": "STRING",
+          "value": "}"
         }
       ]
     },
@@ -1875,67 +2013,6 @@
           "content": {
             "type": "SYMBOL",
             "name": "expression"
-          }
-        },
-        {
-          "type": "SYMBOL",
-          "name": "_block"
-        }
-      ]
-    },
-    "traversal_statement": {
-      "type": "SEQ",
-      "members": [
-        {
-          "type": "STRING",
-          "value": "for"
-        },
-        {
-          "type": "FIELD",
-          "name": "binding",
-          "content": {
-            "type": "SYMBOL",
-            "name": "identifier"
-          }
-        },
-        {
-          "type": "STRING",
-          "value": "in"
-        },
-        {
-          "type": "FIELD",
-          "name": "stack",
-          "content": {
-            "type": "SYMBOL",
-            "name": "identifier"
-          }
-        },
-        {
-          "type": "STRING",
-          "value": "using"
-        },
-        {
-          "type": "FIELD",
-          "name": "domain",
-          "content": {
-            "type": "SYMBOL",
-            "name": "rack_type"
-          }
-        },
-        {
-          "type": "STRING",
-          "value": "up"
-        },
-        {
-          "type": "STRING",
-          "value": "to"
-        },
-        {
-          "type": "FIELD",
-          "name": "count",
-          "content": {
-            "type": "SYMBOL",
-            "name": "_simple_value"
           }
         },
         {

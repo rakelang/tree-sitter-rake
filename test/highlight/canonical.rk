@@ -44,12 +44,15 @@ rake global_root(values: f32s) -> f32s:
 
 run scale_values(
   input: stack Samples,
-  <count: i64>,
+  output: stack Samples,
   <scale: f32>
-) -> f32:
-  for chunk in input using f32s up to <count>:
-    let quality: u32s = widen(chunk.quality)
-    yield chunk.value * <scale>
+) -> stack Samples:
+  let quality: u32s = widen(input.quality)
+  tine #positive means input.value > <0.0>
+  output with { value: input.value * <scale> } where #positive
+
+run survivors(particles: stack Samples) -> stack Samples:
+  compact particles with { value: particles.value + <1.0> } where (#alive and #fast) gaps
 
 scratch stateful(values: f32s) -> f32s:
   accumulator: f32s := values

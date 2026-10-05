@@ -233,6 +233,7 @@ export default grammar({
       seq($.block_comment, optional($._newline)),
       seq($._simple_statement, $._newline),
       $._compound_statement,
+      $.tine_declaration,
     ),
 
     _simple_statement: $ => choice(
@@ -242,7 +243,7 @@ export default grammar({
       $.mutable_binding,
       $.assignment_statement,
       $.return_statement,
-      $.yield_statement,
+      $.stack_result,
       $.break_statement,
       $.continue_statement,
       $.expression_statement,
@@ -251,7 +252,6 @@ export default grammar({
     _compound_statement: $ => choice(
       $.if_statement,
       $.while_statement,
-      $.traversal_statement,
       $.for_statement,
       $.repeat_statement,
     ),
@@ -310,7 +310,25 @@ export default grammar({
     expression_statement: $ => $.expression,
 
     return_statement: $ => seq('return', optional(field('value', $.expression))),
-    yield_statement: $ => seq('yield', field('value', $.expression)),
+    // A stack run's result: its stack with fields replaced, in the records a
+    // predicate selects, keeping only those records under `compact`.
+    stack_result: $ => choice(
+      seq(
+        field('stack', $.identifier),
+        'with',
+        field('fields', $.field_replacements),
+        optional(seq('where', field('selection', $._tine_selector))),
+      ),
+      seq(
+        'compact',
+        field('stack', $.identifier),
+        optional(seq('with', field('fields', $.field_replacements))),
+        'where',
+        field('selection', $._tine_selector),
+      ),
+    ),
+
+    field_replacements: $ => seq('{', commaSep($.field_initializer), '}'),
     break_statement: _ => 'break',
     continue_statement: _ => 'continue',
 
@@ -324,19 +342,6 @@ export default grammar({
     else_clause: $ => seq('else', choice($._block, $.if_statement)),
 
     while_statement: $ => seq('while', field('condition', $.expression), $._block),
-
-    traversal_statement: $ => seq(
-      'for',
-      field('binding', $.identifier),
-      'in',
-      field('stack', $.identifier),
-      'using',
-      field('domain', $.rack_type),
-      'up',
-      'to',
-      field('count', $._simple_value),
-      $._block,
-    ),
 
     for_statement: $ => seq(
       'for',
