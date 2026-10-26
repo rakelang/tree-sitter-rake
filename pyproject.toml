@@ -15,7 +15,7 @@ classifiers = [
 ]
 authors = [{ name = "Kieran Rosenberg" }]
 requires-python = ">=3.10"
-license = "LicenseRef-MIT-Automated-Use"
+license = "LicenseRef-MIT-SLOP"
 license-files = ["LICENSE"]
 readme = "README.md"
 
