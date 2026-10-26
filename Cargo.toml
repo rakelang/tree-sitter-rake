@@ -2,7 +2,7 @@
 name = "tree-sitter-rake"
 description = "Tree-sitter grammar for Rake, a vector-first SIMD language"
 version = "0.7.0"
-authors = ["Kieran Rosenberg"]
+authors = ["Kieran Hannigan"]
 license-file = "LICENSE"
 readme = "README.md"
 keywords = ["incremental", "parsing", "tree-sitter", "rake"]

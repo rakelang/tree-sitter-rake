@@ -13,7 +13,7 @@ classifiers = [
   "Topic :: Text Processing :: Linguistic",
   "Typing :: Typed",
 ]
-authors = [{ name = "Kieran Rosenberg" }]
+authors = [{ name = "Kieran Hannigan" }]
 requires-python = ">=3.10"
 license = "LicenseRef-MIT-SLOP"
 license-files = ["LICENSE"]

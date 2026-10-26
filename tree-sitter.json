@@ -19,7 +19,7 @@
     "description": "Tree-sitter grammar for Rake, a vector-first SIMD language",
     "authors": [
       {
-        "name": "Kieran Rosenberg"
+        "name": "Kieran Hannigan"
       }
     ],
     "links": {
