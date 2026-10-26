@@ -15,7 +15,7 @@
   ],
   "metadata": {
     "version": "0.7.0",
-    "license": "MIT",
+    "license": "LicenseRef-MIT-Automated-Use",
     "description": "Tree-sitter grammar for Rake, a vector-first SIMD language",
     "authors": [
       {
